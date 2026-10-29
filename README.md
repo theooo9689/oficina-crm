@@ -13,4 +13,4 @@ A migração cria uma tabela acessada por funções que validam o código. Ela t
 
 ## Financeiro
 
-O painel permite adicionar receitas manualmente, informar data, descrição e valor, e relacionar cada entrada a um lead. O gráfico tem visões de 30 dias, 90 dias e 12 meses; os pontos mostram valores ao passar o cursor ou navegar pelo teclado. Receitas sincronizam com o mesmo código dos leads e entram nos backups JSON. Não é necessária uma migração SQL adicional para essa função.
+Em cada lead marcado como Fechado, o campo Receita do processo fechado salva o valor gerado e o lança no gráfico automaticamente. Também é possível adicionar outras receitas manualmente, informar data e descrição, e relacionar cada entrada a um lead. O gráfico tem visões de 30 dias, 90 dias e 12 meses; os pontos mostram valores ao passar o cursor ou navegar pelo teclado. Receitas sincronizam com o mesmo código dos leads e entram nos backups JSON. Não é necessária uma migração SQL adicional para essa função.
