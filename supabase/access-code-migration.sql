@@ -19,20 +19,37 @@ on conflict (singleton) do update
 set code_salt = excluded.code_salt,
     code_hash = excluded.code_hash;
 
-create or replace function private.crm_code_matches(p_code text)
-returns boolean
-language sql
-stable
-security definer
-set search_path = ''
-as $$
-  select exists (
-    select 1
-    from private.crm_access a
-    where a.singleton
-      and encode(extensions.digest(coalesce(p_code, '') || a.code_salt, 'sha256'), 'hex') = a.code_hash
-  );
-$$;
+-- O pgcrypto pode já existir em outro schema do projeto. Use o schema real.
+do $$
+declare
+  digest_schema text;
+begin
+  select n.nspname into digest_schema
+  from pg_catalog.pg_extension e
+  join pg_catalog.pg_namespace n on n.oid = e.extnamespace
+  where e.extname = 'pgcrypto';
+
+  if digest_schema is null then
+    raise exception 'A extensão pgcrypto não está disponível.';
+  end if;
+
+  execute pg_catalog.format($ddl$
+    create or replace function private.crm_code_matches(p_code text)
+    returns boolean
+    language sql
+    stable
+    security definer
+    set search_path = ''
+    as $fn$
+      select exists (
+        select 1
+        from private.crm_access a
+        where a.singleton
+          and encode(%I.digest(coalesce(p_code, '') || a.code_salt, 'sha256'), 'hex') = a.code_hash
+      );
+    $fn$;
+  $ddl$, digest_schema);
+end $$;
 revoke all on function private.crm_code_matches(text) from public, anon, authenticated;
 
 create table if not exists public.crm_shared_leads (
